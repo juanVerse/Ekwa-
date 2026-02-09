@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekwa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        :root {
+            --electric-blue: #0057FF;
+            --growth-green: #00C853;
+            --prestige-gold: #FFC107;
+            --dark-bg: #0a192f;
+            --light-bg: #f8f9fa;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Three.js Canvas */
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Header */
+        header {
+            background-color: rgba(255, 255, 255, 0.95);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--electric-blue), var(--growth-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .logo-h1 i {
+            font-size: 1.5rem;
+        }
+
+        .slogan {
+            font-weight: 600;
+            color: var(--electric-blue);
+            font-size: 1.1rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        nav a:hover {
+            color: var(--electric-blue);
+        }
+
+        nav a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--electric-blue);
+            left: 0;
+            bottom: -5px;
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover:after {
+            width: 100%;
+        }
+
+        .cta-button {
+            background: linear-gradient(to right, var(--electric-blue), var(--growth-green));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 87, 255, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 87, 255, 0.3);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--electric-blue);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            z-index: 10;
+            margin-top: 80px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(to right, var(--electric-blue), var(--growth-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            color: #555;
+            max-width: 90%;
+        }
+
+        .hero-illustration {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .map-container {
+            width: 80%;
+            height: 80%;
+            position: relative;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+        }
+
+        /* Registration Form */
+        .registration {
+            padding: 5rem 2rem;
+            background-color: white;
+            position: relative;
+        }
+
+        .registration-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            color: var(--electric-blue);
+        }
+
+        .form-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(240, 248, 255, 0.9));
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 15px 35px rgba(0, 87, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .form-label i {
+            margin-right: 10px;
+            color: var(--electric-blue);
+            width: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+            box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.1);
+        }
+
+        .user-type-selector {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .user-type-option {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-type-option i {
+            font-size: 1.5rem;
+            color: var(--electric-blue);
+        }
+
+        .user-type-option.selected {
+            border-color: var(--electric-blue);
+            background-color: rgba(0, 87, 255, 0.05);
+        }
+
+        .form-note {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-note i {
+            color: var(--growth-green);
+            margin-right: 5px;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .payment-title {
+            font-size: 1.2rem;
+            color: var(--electric-blue);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .payment-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .payment-icon {
+            font-size: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .payment-icon:hover {
+            transform: translateY(-5px);
+        }
+
+        .visa { color: #1a1f71; }
+        .mastercard { color: #eb001b; }
+        .orange-money { color: #ff7900; }
+        .moov-money { color: #e20074; }
+        .airtel-money { color: #e61313; }
+        .paypal { color: #003087; }
+
+        /* Benefits Section */
+        .benefits {
+            padding: 5rem 2rem;
+            background-color: #f0f7ff;
+        }
+
+        .benefits-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .benefit-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .benefit-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--growth-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .benefit-icon i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .benefit-card h3 {
+            margin-bottom: 1rem;
+            color: var(--electric-blue);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 5rem 2rem;
+            background-color: white;
+        }
+
+        .testimonials-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .testimonial-card {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid var(--prestige-gold);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--electric-blue), var(--growth-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .author-info h4 {
+            color: var(--electric-blue);
+            margin-bottom: 0.2rem;
+        }
+
+        .author-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .partners {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .partner-logo {
+            width: 120px;
+            height: 60px;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            padding: 3rem 2rem 1.5rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--prestige-gold), #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--prestige-gold);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-icons a {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: var(--prestige-gold);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            width: 100%;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero-illustration {
+                width: 45%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            nav ul {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                background-color: white;
+                flex-direction: column;
+                padding: 2rem;
+                transition: left 0.3s ease;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+            
+            nav ul.active {
+                left: 0;
+            }
+            
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 120px;
+            }
+            
+            .hero-content {
+                max-width: 100%;
+            }
+            
+            .hero p {
+                max-width: 100%;
+            }
+            
+            .hero-illustration {
+                position: relative;
+                width: 100%;
+                height: 300px;
+                margin-top: 3rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 2rem;
+            }
+            
+            .user-type-selector {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .cta-button {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .benefit-card, .testimonial-card {
+                padding: 1.5rem;
+            }
+            
+            .payment-icons {
+                gap: 1rem;
+            }
+            
+            .payment-icon {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Three.js Canvas -->
+    <div id="three-canvas"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <h1 class="logo-h1">
+                <i class="fas fa-globe-africa"></i>
+                Ekwa
+            </h1>
+            <div class="slogan">Connecting Gabon to the World</div>
+        </div>
+        
+        <div class="menu-toggle" id="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        
+        <nav>
+            <ul id="nav-menu">
+                <li><a href="#home">Accueil</a></li>
+                <li><a href="#about">À propos</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><button class="cta-button" id="header-cta">S'inscrire maintenant</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content fade-in">
+            <h1>Ekwa — La plateforme qui connecte le Gabon au monde.</h1>
+            <p>Simplifiez vos démarches, développez votre commerce, et rejoignez la révolution numérique gabonaise.</p>
+            <button class="cta-button" id="hero-cta">Rejoignez Ekwa aujourd'hui</button>
+        </div>
+        
+        <div class="hero-illustration">
+            <div class="map-container" id="map-3d"></div>
+        </div>
+    </section>
+
+    <!-- Registration Form -->
+    <section class="registration" id="registration">
+        <div class="registration-container">
+            <h2 class="section-title fade-in">Inscrivez-vous gratuitement et soyez parmi les premiers à découvrir Ekwa.</h2>
+            
+            <div class="form-container fade-in">
+                <form id="registration-form">
+                    <div class="form-group">
+                        <label class="form-label" for="fullname">
+                            <i class="fas fa-user"></i> Nom complet
+                        </label>
+                        <input type="text" id="fullname" class="form-input" placeholder="Votre nom complet" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" id="email" class="form-input" placeholder="votre@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="phone">
+                            <i class="fas fa-phone"></i> Téléphone
+                        </label>
+                        <input type="tel" id="phone" class="form-input" placeholder="Votre numéro de téléphone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="password">
+                            <i class="fas fa-lock"></i> Mot de passe
+                        </label>
+                        <input type="password" id="password" class="form-input" placeholder="Créez un mot de passe sécurisé" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-users"></i> Je suis
+                        </label>
+                        <div class="user-type-selector">
+                            <div class="user-type-option" data-value="commerçant">
+                                <i class="fas fa-store"></i>
+                                <span>Commerçant</span>
+                            </div>
+                            <div class="user-type-option" data-value="citoyen">
+                                <i class="fas fa-user"></i>
+                                <span>Citoyen</span>
+                            </div>
+                            <div class="user-type-option" data-value="entreprise">
+                                <i class="fas fa-building"></i>
+                                <span>Entreprise</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="user-type" value="commerçant" required>
+                    </div>
+                    
+                    <!-- Payment Methods Preview -->
+                    <div class="payment-methods fade-in">
+                        <div class="payment-title">Paiements acceptés</div>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa payment-icon visa" title="Visa"></i>
+                            <i class="fab fa-cc-mastercard payment-icon mastercard" title="Mastercard"></i>
+                            <i class="fas fa-money-bill-wave payment-icon orange-money" title="Orange Money"></i>
+                            <i class="fas fa-mobile-alt payment-icon moov-money" title="Moov Money"></i>
+                            <i class="fas fa-signal payment-icon airtel-money" title="Airtel Money"></i>
+                            <i class="fab fa-cc-paypal payment-icon paypal" title="PayPal"></i>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="cta-button" style="width: 100%; padding: 1.2rem;">Créer mon compte</button>
+                    
+                    <div class="form-note">
+                        <i class="fas fa-shield-alt"></i> Vos données sont sécurisées et protégées.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits" id="services">
+        <div class="benefits-container">
+            <h2 class="section-title fade-in">Pourquoi choisir Ekwa ?</h2>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card fade-in">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Commerce local simplifié</h3>
+                    <p>Vendez et achetez en ligne facilement avec une interface intuitive et des outils de gestion complets.</p>
+                </div>
+                
+                <div class="benefit-card fade-in">
+                    <div class="benefit-icon">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <h3>Services publics accessibles</h3>
+                    <p>Payez vos factures et demandez vos documents en un clic, sans déplacement ni attente.</p>
+                </div>
+                
+                <div class="benefit-card fade-in">
+                    <div class="benefit-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h3>Paiements sécurisés</h3>
+                    <p>Mobile Money, cartes bancaires, et solutions modernes de paiement avec une sécurité maximale.</p>
+                </div>
+                
+                <div class="benefit-card fade-in">
+                    <div class="benefit-icon">
+                        <i class="fas fa-globe-africa"></i>
+                    </div>
+                    <h3>Connexion internationale</h3>
+                    <p>Ouvrez vos opportunités au-delà du Gabon avec des outils de commerce international intégrés.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="about">
+        <div class="testimonials-container">
+            <h2 class="section-title fade-in">Ils nous font confiance</h2>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card fade-in">
+                    <p class="testimonial-text">"Grâce à Ekwa, j'ai pu vendre mes produits au-delà de Libreville. Ma clientèle a doublé en seulement 3 mois !"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">A</div>
+                        <div class="author-info">
+                            <h4>Aline, commerçante locale</h4>
+                            <p>Libreville</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card fade-in">
+                    <p class="testimonial-text">"Mes démarches administratives sont enfin rapides et simples. Ekwa a réduit mes temps d'attente de plus de 70%."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">J</div>
+                        <div class="author-info">
+                            <h4>Jean, citoyen gabonais</h4>
+                            <p>Port-Gentil</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card fade-in">
+                    <p class="testimonial-text">"La plateforme nous a permis de digitaliser nos services et d'atteindre de nouveaux clients internationaux."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div class="author-info">
+                            <h4>M. Ndong, directeur d'entreprise</h4>
+                            <p>Franceville</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="partners fade-in">
+                <div class="partner-logo">BGFI Bank</div>
+                <div class="partner-logo">Gabon Telecom</div>
+                <div class="partner-logo">Airtel</div>
+                <div class="partner-logo">Ministère Digital</div>
+                <div class="partner-logo">ONG Gabon Avenir</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <h1 class="footer-h1">Ekwa</h1>
+                <div class="slogan">Connecting Gabon to the World</div>
+            </div>
+            
+            <div class="footer-links">
+                <a href="#">Conditions d'utilisation</a>
+                <a href="#">Politique de confidentialité</a>
+                <a href="#">Support</a>
+                <a href="#contact">Contact</a>
+            </div>
+            
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+            
+            <div class="copyright">
+                © 2026 Ekwa — Connecting Gabon to the World. Tous droits réservés.
+                  | by ODI
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            menuToggle.innerHTML = navMenu.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    // Close mobile menu if open
+                    navMenu.classList.remove('active');
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                    
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // User type selection
+        const userTypeOptions = document.querySelectorAll('.user-type-option');
+        const userTypeInput = document.getElementById('user-type');
+        
+        userTypeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                userTypeOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                userTypeInput.value = option.getAttribute('data-value');
+            });
+        });
+        
+        // Initialize with first option selected
+        userTypeOptions[0].classList.add('selected');
+        
+        // CTA buttons scroll to registration
+        document.getElementById('header-cta').addEventListener('click', () => {
+            document.getElementById('registration').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        document.getElementById('hero-cta').addEventListener('click', () => {
+            document.getElementById('registration').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Form submission
+        const registrationForm = document.getElementById('registration-form');
+        
+        registrationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                fullname: document.getElementById('fullname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                userType: userTypeInput.value,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Show loading state
+            const submitBtn = registrationForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+            submitBtn.disabled = true;
+            
+            try {
+                // In a real implementation, you would send this to your server
+                // For this example, we'll simulate an API call
+                
+                // Create the email body
+                const emailBody = `
+Nouvelle inscription sur Ekwa:
+- Nom: ${formData.fullname}
+- Email: ${formData.email}
+- Téléphone: ${formData.phone}
+- Type d'utilisateur: ${formData.userType}
+- Date: ${new Date().toLocaleString('fr-FR')}
+                `;
+                
+                // Simulate sending to your email (in production, use Formspree or similar)
+                console.log("Envoi des données d'inscription à juankaisen5@gmail.com");
+                console.log("Contenu de l'email:", emailBody);
+                
+                // For demonstration, we'll show a success message
+                // In a real implementation, you would use Formspree or your own backend
+                
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Show success message
+                alert(`Merci ${formData.fullname} ! Votre inscription a été envoyée avec succès. Vous recevrez bientôt un email de confirmation. Les détails de votre inscription ont été envoyés à juankaisen5@gmail.com.`);
+                
+                // Reset form
+                registrationForm.reset();
+                userTypeOptions[0].classList.add('selected');
+                userTypeOptions[1].classList.remove('selected');
+                userTypeOptions[2].classList.remove('selected');
+                userTypeInput.value = 'commerçant';
+                
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert("Une erreur s'est produite lors de l'envoi du formulaire. Veuillez réessayer.");
+            } finally {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe elements for animation
+        document.querySelectorAll('.section-title, .benefit-card, .testimonial-card, .form-container, .payment-methods').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Three.js scene for background animation
+        let scene, camera, renderer, particles;
+        
+        function initThreeJS() {
+            // Scene
+            scene = new THREE.Scene();
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ 
+                alpha: true, 
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            const canvasContainer = document.getElementById('three-canvas');
+            canvasContainer.appendChild(renderer.domElement);
+            
+            // Create particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const count = 1000;
+            
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            
+            const color1 = new THREE.Color(0x0057FF); // Electric blue
+            const color2 = new THREE.Color(0x00C853); // Growth green
+            const color3 = new THREE.Color(0xFFC107); // Prestige gold
+            
+            for(let i = 0; i < count * 3; i += 3) {
+                // Positions
+                positions[i] = (Math.random() - 0.5) * 20;
+                positions[i + 1] = (Math.random() - 0.5) * 20;
+                positions[i + 2] = (Math.random() - 0.5) * 10;
+                
+                // Colors
+                const colorChoice = Math.random();
+                let color;
+                
+                if(colorChoice < 0.4) {
+                    color = color1;
+                } else if(colorChoice < 0.8) {
+                    color = color2;
+                } else {
+                    color = color3;
+                }
+                
+                colors[i] = color.r;
+                colors[i + 1] = color.g;
+                colors[i + 2] = color.b;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            // Material
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            // Points
+            particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation
+            animate();
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if(particles) {
+                particles.rotation.x += 0.0005;
+                particles.rotation.y += 0.001;
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Initialize Three.js when page loads
+        window.addEventListener('load', initThreeJS);
+        
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if(window.scrollY > 50) {
+                header.style.padding = '0.5rem 2rem';
+                header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.1)';
+            } else {
+                header.style.padding = '1rem 2rem';
+                header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            }
+        });
+    </script>
+</body>
+</html>
